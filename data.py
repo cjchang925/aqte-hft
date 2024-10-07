@@ -81,6 +81,8 @@ def prepare_data():
                 "17928899.62484339" // Ignore.
             ]
         ]
+        
+        BTC -> base / USDT -> quote
     """
     klines = get_binance_klines()
 
@@ -93,7 +95,7 @@ def prepare_data():
     df["bottom_tail"] = [
         (min([float(kline[1]), float(kline[4])]) - float(kline[3])) for kline in klines
     ]
-    df["open"] = [float(kline[1]) for kline in klines]
+    # df["open"] = [float(kline[1]) for kline in klines]
     df["close"] = [float(kline[4]) for kline in klines]
     df["volume"] = [float(kline[7]) for kline in klines]
 
@@ -101,18 +103,18 @@ def prepare_data():
     df["rsi"] = ta.momentum.RSIIndicator(df["close"], window=14).rsi()
 
     # Add label "trend" which is the difference between the next close price and the current close price
-    df["next_diff"] = df["close"].shift(-1) - df["close"]
+    df["next_diff"] = df["close"].shift(-7) - df["close"]
 
     # Drop the first 300 rows
     df = df.iloc[300:]
 
-    # Drop the last row
-    df = df.iloc[:-1]
+    # Drop the last 8 rows
+    df = df.iloc[:-8]
 
-    slided_df = create_lagged_features(df, 8)
+    slided_df = create_lagged_features(df, 14)
 
     # Drop the first 15 rows
-    return slided_df.iloc[4:]
+    return slided_df.iloc[15:]
 
 
 prepare_data()
