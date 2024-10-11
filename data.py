@@ -95,21 +95,24 @@ def prepare_data():
     df["bottom_tail"] = [
         (min([float(kline[1]), float(kline[4])]) - float(kline[3])) for kline in klines
     ]
-    # df["open"] = [float(kline[1]) for kline in klines]
     df["close"] = [float(kline[4]) for kline in klines]
     df["volume"] = [float(kline[7]) for kline in klines]
 
     # Calculate RSI
     df["rsi"] = ta.momentum.RSIIndicator(df["close"], window=14).rsi()
 
+    # Calculate MACD
+    macd = ta.trend.MACD(df["close"], window_slow=26, window_fast=12, window_sign=9)
+    df["macd"] = macd.macd_diff()  # Add the MACD difference (MACD - Signal line)
+
     # Add label "trend" which is the difference between the next close price and the current close price
-    df["next_diff"] = df["close"].shift(-7) - df["close"]
+    df["next_diff"] = df["close"].shift(-3) - df["close"]
 
     # Drop the first 300 rows
     df = df.iloc[300:]
 
-    # Drop the last 8 rows
-    df = df.iloc[:-8]
+    # Drop the last 3 rows
+    df = df.iloc[:-3]
 
     slided_df = create_lagged_features(df, 14)
 
